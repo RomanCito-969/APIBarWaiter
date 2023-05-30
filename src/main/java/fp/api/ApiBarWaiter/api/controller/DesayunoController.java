@@ -3,10 +3,14 @@ package fp.api.ApiBarWaiter.api.controller;
 
 import fp.api.ApiBarWaiter.api.model.Desayuno;
 import fp.api.ApiBarWaiter.api.repository.DesayunoRepository;
+import fp.api.ApiBarWaiter.api.upload.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.util.List;
 
@@ -15,6 +19,8 @@ import java.util.List;
 public class DesayunoController {
 
     private final DesayunoRepository desayunoRepository;
+    private final StorageService storageService;
+
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/desayuno")
     public ResponseEntity<?> obtenerDesayunos(){
@@ -37,8 +43,18 @@ public class DesayunoController {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping("/desayuno")
-    public ResponseEntity<Desayuno> insertarDesayuno(@RequestBody Desayuno desayuno) {
+    @PostMapping(value = "/desayuno",consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Desayuno> insertarDesayuno(@RequestPart("nuevo") Desayuno desayuno,
+                                                     @RequestPart("file") MultipartFile file) {
+
+        String urlImagen=null;
+        if(!file.isEmpty()){
+            String imagen=storageService.store(file);
+            urlImagen = MvcUriComponentsBuilder
+                    .fromMethodName(FicherosController.class,"serveFile",imagen,null)
+                    .build().toUriString();
+        }
+
         Desayuno desayunoGuadada = desayunoRepository.save(desayuno);
         return ResponseEntity.status(HttpStatus.CREATED).body(desayunoGuadada);
     }

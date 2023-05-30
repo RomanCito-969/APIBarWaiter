@@ -1,11 +1,16 @@
 package fp.api.ApiBarWaiter.api.controller;
 
+import fp.api.ApiBarWaiter.api.model.Bebida;
 import fp.api.ApiBarWaiter.api.model.Cafe;
 import fp.api.ApiBarWaiter.api.repository.CafeRepository;
+import fp.api.ApiBarWaiter.api.upload.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.util.List;
 
@@ -14,6 +19,8 @@ import java.util.List;
 public class CafeController {
 
     private final CafeRepository cafeRepository;
+    private final StorageService storageService;
+
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/cafe")
     public ResponseEntity<?> obtenerCafes(){
@@ -36,9 +43,21 @@ public class CafeController {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping("/cafe")
-    public ResponseEntity<Cafe> insertarCafe(@RequestBody Cafe mesa) {
-        Cafe cafeGuadada = cafeRepository.save(mesa);
+    @PostMapping(value = "/cafe", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Cafe> insertarCafe(@RequestPart("nuevo")Cafe cafe,
+                                             @RequestPart("file") MultipartFile file) {
+        String urlImagen = null;
+        if (!file.isEmpty()){
+            String imagen = storageService.store(file);
+            urlImagen =  MvcUriComponentsBuilder
+                    // El segundo argumento es necesario solo cuando queremos obtener la imagen
+                    // En este caso tan solo necesitamos obtener la URL
+                    .fromMethodName(FicherosController.class, "serveFile", imagen, null)
+                    .build().toUriString();
+        }
+        Cafe cafeGuadada = cafe;
+        cafeGuadada.setImagen(urlImagen);
+        cafeRepository.save(cafeGuadada);
         return ResponseEntity.status(HttpStatus.CREATED).body(cafeGuadada);
     }
 

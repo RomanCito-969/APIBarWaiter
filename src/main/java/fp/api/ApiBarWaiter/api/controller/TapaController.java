@@ -2,10 +2,14 @@ package fp.api.ApiBarWaiter.api.controller;
 
 import fp.api.ApiBarWaiter.api.model.Tapa;
 import fp.api.ApiBarWaiter.api.repository.TapaRepository;
+import fp.api.ApiBarWaiter.api.upload.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.util.List;
 
@@ -14,6 +18,8 @@ import java.util.List;
 public class TapaController {
 
     private final TapaRepository tapaRepository;
+    private final StorageService storageService;
+
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/tapa")
     public ResponseEntity<?> obtenerTapa(){
@@ -28,18 +34,28 @@ public class TapaController {
     @GetMapping("/tapa/{id}")
     public ResponseEntity<?> obtenerUnaTapa(@PathVariable Long id){
         if (tapaRepository.existsById(id)){
-            Tapa mesa = tapaRepository.findById(id).orElse(null);
-            return ResponseEntity.status(HttpStatus.ACCEPTED).body(mesa);
+            Tapa tapa = tapaRepository.findById(id).orElse(null);
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(tapa);
         }else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping("/tapa")
-    public ResponseEntity<Tapa> insertarTapa(@RequestBody Tapa mesa) {
-        Tapa mesaGuadada = tapaRepository.save(mesa);
-        return ResponseEntity.status(HttpStatus.CREATED).body(mesaGuadada);
+    @PostMapping(value = "/tapa" ,consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Tapa> insertarTapa(@RequestPart("nuevo")Tapa tapa,
+                                             @RequestPart("file") MultipartFile file) {
+        String urlImagen=null;
+        if(!file.isEmpty()){
+            String imagen=storageService.store(file);
+            urlImagen = MvcUriComponentsBuilder
+                    .fromMethodName(FicherosController.class,"serveFile",imagen,null)
+                    .build().toUriString();
+        }
+        Tapa tapaGuadada = tapa;
+        tapaGuadada.setImagen(urlImagen);
+        tapaRepository.save(tapaGuadada);
+        return ResponseEntity.status(HttpStatus.CREATED).body(tapaGuadada);
     }
 
     @PutMapping("/tapa/{id}")

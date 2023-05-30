@@ -2,10 +2,14 @@ package fp.api.ApiBarWaiter.api.controller;
 
 import fp.api.ApiBarWaiter.api.model.Cubata;
 import fp.api.ApiBarWaiter.api.repository.CubataRepository;
+import fp.api.ApiBarWaiter.api.upload.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
 import java.util.List;
 
@@ -14,6 +18,7 @@ import java.util.List;
 public class CubataController {
 
     private final CubataRepository cubataRepository;
+    private final StorageService storageService;
     @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/cubata")
     public ResponseEntity<?> obtenerCubatas(){
@@ -36,9 +41,20 @@ public class CubataController {
     }
 
     @CrossOrigin(origins = "http://localhost:3000")
-    @PostMapping("/cubata")
-    public ResponseEntity<Cubata> insertarCubata(@RequestBody Cubata cubata) {
-        Cubata cubataGuadada = cubataRepository.save(cubata);
+    @PostMapping(value = "/cubata",consumes= MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Cubata> insertarCubata(@RequestPart("nuevo") Cubata cubata,
+                                                 @RequestPart("file") MultipartFile file) {
+        String urlImagen=null;
+        if(!file.isEmpty()){
+            String imagen=storageService.store(file);
+            urlImagen = MvcUriComponentsBuilder
+                    .fromMethodName(FicherosController.class,"serveFile",imagen,null)
+                    .build().toUriString();
+        }
+
+        Cubata cubataGuadada = cubata;
+        cubataGuadada.setImagen(urlImagen);
+        cubataRepository.save(cubataGuadada);
         return ResponseEntity.status(HttpStatus.CREATED).body(cubataGuadada);
     }
 
