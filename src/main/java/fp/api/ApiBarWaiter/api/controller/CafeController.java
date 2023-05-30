@@ -16,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class CafeController {
 
     private final CafeRepository cafeRepository;
@@ -32,6 +33,7 @@ public class CafeController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/cafe/{id}")
     public ResponseEntity<?> obtenerUnaCafe(@PathVariable Long id){
         if (cafeRepository.existsById(id)){

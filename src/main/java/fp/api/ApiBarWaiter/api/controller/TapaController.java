@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class TapaController {
 
     private final TapaRepository tapaRepository;
@@ -31,6 +32,7 @@ public class TapaController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/tapa/{id}")
     public ResponseEntity<?> obtenerUnaTapa(@PathVariable Long id){
         if (tapaRepository.existsById(id)){

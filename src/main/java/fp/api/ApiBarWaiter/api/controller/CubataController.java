@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class CubataController {
 
     private final CubataRepository cubataRepository;
@@ -30,6 +31,7 @@ public class CubataController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/cubata/{id}")
     public ResponseEntity<?> obtenerUnaCubata(@PathVariable Long id){
         if (cubataRepository.existsById(id)){

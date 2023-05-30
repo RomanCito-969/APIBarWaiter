@@ -16,6 +16,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class DesayunoController {
 
     private final DesayunoRepository desayunoRepository;
@@ -32,6 +33,7 @@ public class DesayunoController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/desayuno/{id}")
     public ResponseEntity<?> obtenerUnaDesayuno(@PathVariable Long id){
         if (desayunoRepository.existsById(id)){

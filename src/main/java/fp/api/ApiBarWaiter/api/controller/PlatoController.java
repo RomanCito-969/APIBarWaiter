@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class PlatoController {
 
     private final PlatoRepository platoRepository;
@@ -30,6 +31,7 @@ public class PlatoController {
         }
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @GetMapping("/plato/{id}")
     public ResponseEntity<?> obtenerUnaPlato(@PathVariable Long id){
         if (platoRepository.existsById(id)){
